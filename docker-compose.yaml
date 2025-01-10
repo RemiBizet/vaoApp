@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:15 # postgres image for database
+    environment:
+      - POSTGRES_USER=postgres # postgres super user credentials
+      - POSTGRES_PASSWORD=admin_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Volume where the data is contained
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Runs on first start to initialize the tables
+    ports:
+      - "5432:5432" # Default port
+
+volumes:
+  postgres_data:
