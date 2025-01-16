@@ -8,8 +8,8 @@ ChatRoomView::ChatRoomView(DatabaseHandler& db_handler, const std::string& room_
       room_name(room_name)
 {
    // Initialize components
-    main_box = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 5);
-    message_box = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 5);
+    main_box = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10);
+    message_box = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10);
     input_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 5);
     send_button = Gtk::Button("Send");
     go_back_button = Gtk::Button("Go Back");
@@ -24,13 +24,17 @@ ChatRoomView::ChatRoomView(DatabaseHandler& db_handler, const std::string& room_
     room_label.set_text(room_name);
     room_label.set_halign(Gtk::ALIGN_START);
     room_label.get_style_context()->add_class("title-3");
+    room_label.set_margin_bottom(10);
 
     // Setup message area
     message_scroll.set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
     message_scroll.add(message_box);  
+    message_scroll.set_size_request(600,500);
     
     // Setup input area
     message_entry.set_placeholder_text("Type a message...");
+    message_entry.set_size_request(-1,40);
+    input_box.set_margin_top(10);
     input_box.pack_start(message_entry, true, true, 0);
     input_box.pack_start(send_button, false, false, 0);
     input_box.pack_start(go_back_button, false, false, 0);
@@ -51,6 +55,11 @@ ChatRoomView::ChatRoomView(DatabaseHandler& db_handler, const std::string& room_
     
     add(main_box);
     show_all();
+
+    set_margin_start(20);
+    set_margin_end(20);
+    set_margin_top(20);
+    set_margin_bottom(20);
 
     // Load existing messages
     load_messages();
@@ -96,19 +105,25 @@ void ChatRoomView::add_message(const std::string& content, bool is_from_current_
     auto message_label = Gtk::manage(new Gtk::Label(content));
     message_label->set_line_wrap(true);
     message_label->set_line_wrap_mode(Pango::WRAP_WORD_CHAR);
-    message_label->set_max_width_chars(40);
+    message_label->set_max_width_chars(50);
     
+    auto font_desc = message_label->get_pango_context()->get_font_description();
+    font_desc.set_size(11 * PANGO_SCALE);
+    message_label->override_font(font_desc);
+
     auto message_frame = Gtk::manage(new Gtk::Frame());
     message_frame->add(*message_label);
-    message_frame->set_margin_start(5);
-    message_frame->set_margin_end(6);
+    message_frame->set_margin_start(10);
+    message_frame->set_margin_end(10);
+    message_frame->set_margin_top(5);
+    message_frame->set_margin_bottom(5);
     
     if (is_from_current_user) {
         message_container->pack_end(*message_frame, false, false, 0);
-        message_frame->override_background_color(Gdk::RGBA("lightblue"));
+        message_frame->override_background_color(Gdk::RGBA("blue"));
     } else {
         message_container->pack_start(*message_frame, false, false, 0);
-        message_frame->override_background_color(Gdk::RGBA("lightgrey"));
+        message_frame->override_background_color(Gdk::RGBA("orange"));
     }
     
     message_box.pack_start(*message_container, false, false, 0);
