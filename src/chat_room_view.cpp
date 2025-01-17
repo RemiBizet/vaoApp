@@ -75,9 +75,10 @@ void ChatRoomView::on_go_back_clicked(){
 void ChatRoomView::load_messages() {
     try {
         auto messages = db_handler.get_room_messages(room_id);
+        last_message_sender_id = "";
         for (const auto& msg : messages) {
             bool is_from_current_user = (msg.sender_id == current_user->getUserId());
-            add_message(msg.content, is_from_current_user);
+            add_message(msg.content, msg.sender_id,is_from_current_user);
         }
         scroll_to_bottom();
     } catch (const std::exception& e) {
@@ -91,7 +92,7 @@ void ChatRoomView::on_send_clicked() {
     
     try {
         db_handler.send_message(room_id, current_user->getUserId(), message_text);
-        add_message(message_text, true);
+        add_message(message_text, current_user->getUserId(), true);
         message_entry.set_text("");
         scroll_to_bottom();
     } catch (const std::exception& e) {
@@ -100,8 +101,33 @@ void ChatRoomView::on_send_clicked() {
 }
 
 // add message to the Scrolled Window
-void ChatRoomView::add_message(const std::string& content, bool is_from_current_user) {
-    auto message_container = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
+void ChatRoomView::add_message(const std::string& content, const std::string& sender_id, bool is_from_current_user) {
+    auto message_container = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
+
+    // Add username label if sender has changed
+    if (sender_id != last_message_sender_id) {
+
+        auto username_label = Gtk::manage(new Gtk::Label());
+        std::string username;
+        try {
+            username = db_handler.get_username_by_id(sender_id);
+        } catch (const std::exception& e) {
+            username = "Unknown User";
+        }
+        
+        username_label->set_text(username);
+        username_label->set_halign(is_from_current_user ? Gtk::ALIGN_END : Gtk::ALIGN_START);
+        username_label->get_style_context()->add_class("caption");
+        username_label->set_margin_start(10);
+        username_label->set_margin_end(10);
+        username_label->set_margin_bottom(2);
+        
+        username_label->override_color(Gdk::RGBA("green"));
+        message_container->pack_start(*username_label, false, false, 0);
+    }
+
+    auto message_box_horizontal = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
+
     auto message_label = Gtk::manage(new Gtk::Label(content));
     message_label->set_line_wrap(true);
     message_label->set_line_wrap_mode(Pango::WRAP_WORD_CHAR);
@@ -119,15 +145,18 @@ void ChatRoomView::add_message(const std::string& content, bool is_from_current_
     message_frame->set_margin_bottom(5);
     
     if (is_from_current_user) {
-        message_container->pack_end(*message_frame, false, false, 0);
+        message_box_horizontal->pack_end(*message_frame, false, false, 0);
         message_frame->override_background_color(Gdk::RGBA("blue"));
     } else {
-        message_container->pack_start(*message_frame, false, false, 0);
+        message_box_horizontal->pack_start(*message_frame, false, false, 0);
         message_frame->override_background_color(Gdk::RGBA("orange"));
     }
     
+    message_container->pack_start(*message_box_horizontal,false,false,0);
     message_box.pack_start(*message_container, false, false, 0);
     message_container->show_all();
+
+    last_message_sender_id = sender_id;
 }
 
 void ChatRoomView::scroll_to_bottom() {

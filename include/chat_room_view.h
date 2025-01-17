@@ -13,6 +13,7 @@ private:
     std::optional<User> current_user;
     std::string room_id;
     std::string room_name;
+    std::string last_message_sender_id;
 
     // GUI Components 
     Gtk::Box main_box;
@@ -28,7 +29,7 @@ private:
     void on_send_clicked();
     void on_go_back_clicked();
     void load_messages();
-    void add_message(const std::string& content, bool is_from_current_user);
+    void add_message(const std::string& content, const std::string& sender_id, bool is_from_current_user);
     void scroll_to_bottom();
 
     // Signal

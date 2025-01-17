@@ -294,3 +294,27 @@ std::chrono::system_clock::time_point DatabaseHandler::parseTimestamp(const std:
     ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
     return std::chrono::system_clock::from_time_t(std::mktime(&tm));
 }
+
+std::string DatabaseHandler::get_username_by_id(const std::string& user_id) {
+    try {
+        pqxx::connection dbConnection = createConnection();
+        pqxx::work txn(dbConnection);
+        
+        // Using parameterized query to prevent SQL injection
+        pqxx::result result = txn.exec_params(
+            "SELECT username FROM users WHERE user_id = $1",
+            user_id
+        );
+        
+        if (result.empty()) {
+            throw std::runtime_error("User not found");
+        }
+        
+        std::string username = result[0]["username"].as<std::string>();
+        txn.commit();
+        
+        return username;
+    } catch (const std::exception& e) {
+        throw std::runtime_error("Error getting username: " + std::string(e.what()));
+    }
+}
