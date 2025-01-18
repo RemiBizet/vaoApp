@@ -121,8 +121,8 @@ void ChatRoomView::add_message(const std::string& content, const std::string& se
         username_label->set_margin_start(10);
         username_label->set_margin_end(10);
         username_label->set_margin_bottom(2);
-        
-        username_label->override_color(Gdk::RGBA("green"));
+            
+        username_label->override_color(Gdk::RGBA("white"));
         message_container->pack_start(*username_label, false, false, 0);
     }
 
@@ -146,10 +146,10 @@ void ChatRoomView::add_message(const std::string& content, const std::string& se
     
     if (is_from_current_user) {
         message_box_horizontal->pack_end(*message_frame, false, false, 0);
-        message_frame->override_background_color(Gdk::RGBA("blue"));
+        message_frame->override_background_color(Gdk::RGBA("purple"));
     } else {
         message_box_horizontal->pack_start(*message_frame, false, false, 0);
-        message_frame->override_background_color(Gdk::RGBA("orange"));
+        message_frame->override_background_color(Gdk::RGBA("darkorange"));
     }
     
     message_container->pack_start(*message_box_horizontal,false,false,0);

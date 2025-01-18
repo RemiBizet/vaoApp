@@ -5,16 +5,27 @@ ChatListView::ChatListView(DatabaseHandler& db)
     : db_handler(db) {
 
     // Initialize components
-    main_box = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 5);
-
+    main_box = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10);
     current_user = db_handler.getCurrentUser();
 
     set_halign(Gtk::ALIGN_CENTER); // Center horizontally
     set_valign(Gtk::ALIGN_CENTER); // Center vertically
+
+    // Add title label
+    auto title_label = Gtk::manage(new Gtk::Label("Chat Rooms"));
+    title_label->get_style_context()->add_class("title-2");
+    title_label->set_margin_bottom(10);
+    title_label->set_halign(Gtk::ALIGN_START);
       
     // Setup scrolled view for chat list
     scroll.set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
     scroll.add(chat_list);
+    scroll.set_size_request(400,500);
+
+    // Style the chat list
+    chat_list.set_selection_mode(Gtk::SELECTION_SINGLE);
+    chat_list.set_margin_start(5);
+    chat_list.set_margin_end(5);
     
     // Connect the row-activated signal
     chat_list.signal_row_activated().connect(
@@ -28,26 +39,45 @@ ChatListView::ChatListView(DatabaseHandler& db)
         false
     );
 
+    // Create button box
+    auto button_box = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10));
+    button_box->set_margin_top(10);
+    button_box->set_margin_bottom(10);
+    
     // Setup new chat button
     new_chat_button.set_label("New Chat");
+    new_chat_button.get_style_context()->add_class("suggested-action");
+    new_chat_button.set_size_request(-1, 40);
     new_chat_button.signal_clicked().connect(
         sigc::mem_fun(*this, &ChatListView::on_new_chat_room_clicked)
     );
 
     // Setup logout button
     logout_button.set_label("Logout");
+    logout_button.get_style_context()->add_class("destructive-action");
+    logout_button.set_size_request(-1, 40);
     logout_button.signal_clicked().connect(
         sigc::mem_fun(*this, &ChatListView::on_logout_clicked)
     );
-    
-    main_box.pack_start(scroll, true, true, 0);
-    main_box.pack_start(new_chat_button, false, false, 0);
-    main_box.pack_start(logout_button,false,false,0);
-    add(main_box);
 
+    // Pack buttons into button box
+    button_box->pack_start(new_chat_button, true, true, 0);
+    button_box->pack_start(logout_button, true, true, 0);
+    
+    // Set margins for main container
+    set_margin_start(20);
+    set_margin_end(20);
+    set_margin_top(20);
+    set_margin_bottom(20);
+    
+    // Pack everything into main box
+    main_box.pack_start(*title_label, false, false, 0);
+    main_box.pack_start(scroll, true, true, 0);
+    main_box.pack_start(*button_box, false, false, 0);
+    
+    add(main_box);
     load_conversations();
     show_all();
-
 }
 
 bool ChatListView::on_button_press_event(GdkEventButton* event) {
