@@ -47,6 +47,7 @@ public:
 
     // Chat room related methods
     std::vector<Message> get_room_messages(const std::string& room_id);
+    std::vector<std::string> get_room_users(const std::string& room_id);
     void send_message(const std::string room_id, const std::string& sender_id, const std::string& content);
     std::string get_username_by_id(const std::string& user_id);
 

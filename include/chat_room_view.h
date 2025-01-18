@@ -24,6 +24,7 @@ private:
     Gtk::Button send_button;
     Gtk::Button go_back_button;
     Gtk::Label room_label;
+    Gtk::Label* users_label;
 
     // Methods
     void on_send_clicked();

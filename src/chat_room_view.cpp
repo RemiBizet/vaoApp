@@ -14,7 +14,6 @@ ChatRoomView::ChatRoomView(DatabaseHandler& db_handler, const std::string& room_
     send_button = Gtk::Button("Send");
     go_back_button = Gtk::Button("Go Back");
 
-
     current_user = db_handler.getCurrentUser();
 
     set_halign(Gtk::ALIGN_CENTER); // Center horizontally
@@ -23,8 +22,26 @@ ChatRoomView::ChatRoomView(DatabaseHandler& db_handler, const std::string& room_
     // Setup room label
     room_label.set_text(room_name);
     room_label.set_halign(Gtk::ALIGN_START);
-    room_label.get_style_context()->add_class("title-3");
-    room_label.set_margin_bottom(10);
+    room_label.get_style_context()->add_class("title-2");
+    room_label.set_margin_bottom(5);
+
+    // Add users list label
+    users_label = Gtk::manage(new Gtk::Label());
+    try {
+        auto room_users = db_handler.get_room_users(room_id);
+        std::string users_text = "with ";
+        for (size_t i = 0; i < room_users.size(); ++i) {
+            users_text += room_users[i];
+            if (i < room_users.size() - 2) users_text += ", ";
+            else if (i == room_users.size() - 2) users_text += " and ";
+        }
+        users_label->set_text(users_text);
+    } catch (const std::exception& e) {
+        users_label->set_text("with unknown users");
+    }
+    users_label->set_halign(Gtk::ALIGN_START);
+    users_label->get_style_context()->add_class("subtitle-1");
+    users_label->set_margin_bottom(10);
 
     // Setup message area
     message_scroll.set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
@@ -50,6 +67,7 @@ ChatRoomView::ChatRoomView(DatabaseHandler& db_handler, const std::string& room_
 
     // Pack widgets
     main_box.pack_start(room_label, false, false, 0);
+    main_box.pack_start(*users_label, false, false, 0);
     main_box.pack_start(message_scroll, true, true, 0);
     main_box.pack_start(input_box, false, false, 0);
     
@@ -117,7 +135,7 @@ void ChatRoomView::add_message(const std::string& content, const std::string& se
         
         username_label->set_text(username);
         username_label->set_halign(is_from_current_user ? Gtk::ALIGN_END : Gtk::ALIGN_START);
-        username_label->get_style_context()->add_class("caption");
+        username_label->get_style_context()->add_class("title-4");
         username_label->set_margin_start(10);
         username_label->set_margin_end(10);
         username_label->set_margin_bottom(2);
@@ -134,7 +152,7 @@ void ChatRoomView::add_message(const std::string& content, const std::string& se
     message_label->set_max_width_chars(50);
     
     auto font_desc = message_label->get_pango_context()->get_font_description();
-    font_desc.set_size(11 * PANGO_SCALE);
+    font_desc.set_size(13 * PANGO_SCALE);
     message_label->override_font(font_desc);
 
     auto message_frame = Gtk::manage(new Gtk::Frame());
@@ -143,6 +161,16 @@ void ChatRoomView::add_message(const std::string& content, const std::string& se
     message_frame->set_margin_end(10);
     message_frame->set_margin_top(5);
     message_frame->set_margin_bottom(5);
+
+    // Add CSS provider for rounded corners
+    auto css_provider = Gtk::CssProvider::create();
+    css_provider->load_from_data(
+        "frame { border-radius: 15px; padding: 8px; }"
+    );
+    message_frame->get_style_context()->add_provider(
+        css_provider,
+        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+    );
     
     if (is_from_current_user) {
         message_box_horizontal->pack_end(*message_frame, false, false, 0);

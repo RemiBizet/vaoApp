@@ -318,3 +318,38 @@ std::string DatabaseHandler::get_username_by_id(const std::string& user_id) {
         throw std::runtime_error("Error getting username: " + std::string(e.what()));
     }
 }
+
+std::vector<std::string> DatabaseHandler::get_room_users(const std::string& room_id) {
+    std::vector<std::string> usernames;
+    try {
+        pqxx::connection dbConnection = createConnection();
+        pqxx::work txn(dbConnection);
+        
+        std::string query = R"(
+            SELECT DISTINCT u.username 
+            FROM users u 
+            INNER JOIN chat_room_members crm ON u.user_id = crm.user_id 
+            WHERE crm.room_id = $1 
+            AND u.user_id != $2 
+            ORDER BY u.username;
+        )";
+        
+        pqxx::result result = txn.exec_params(query, room_id, current_user->getUserId());
+        
+        for (const auto& row : result) {
+            usernames.push_back(row["username"].as<std::string>());
+        }
+
+        // If no other users found, return appropriate message
+        if (usernames.empty()) {
+            usernames.push_back("no other users");
+        }
+
+        txn.commit();
+        
+    } catch (const std::exception& e) {
+        throw std::runtime_error("Failed to get room users: " + std::string(e.what()));
+    }
+    
+    return usernames;
+}
