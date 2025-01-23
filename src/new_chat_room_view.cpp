@@ -11,30 +11,46 @@ NewChatRoomView::NewChatRoomView(DatabaseHandler& db_handler)
     set_valign(Gtk::ALIGN_CENTER); // Center vertically
 
     // Initialize components
-    main_box = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 5);
-    button_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 5);
+    main_box = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10);
+    button_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
     confirm_button = Gtk::Button("Create Chat");
     go_back_button = Gtk::Button("Go Back");
+
+    // Add title label
+    auto title_label = Gtk::manage(new Gtk::Label("Create New Chat Room"));
+    title_label->get_style_context()->add_class("title-2");
+    title_label->set_margin_bottom(10);
+    title_label->set_halign(Gtk::ALIGN_START);
    
     // Setup search
     search_entry.set_placeholder_text("Search users...");
+    search_entry.set_margin_bottom(10);
     
     // Setup room name entry
     room_name_label.set_text("Room Name (optional):");
     room_name_label.set_halign(Gtk::ALIGN_START);
+    room_name_label.set_margin_bottom(5);
     room_name_entry.set_placeholder_text("Enter room name...");
+    room_name_entry.set_margin_bottom(10);
     
     // Setup user list with multiple selection
     user_scroll.set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
     user_scroll.add(user_list);
     user_list.set_selection_mode(Gtk::SelectionMode::SELECTION_MULTIPLE);
+    user_scroll.set_size_request(400, 300); // Set a fixed size for the scrollable area
     
     // Setup selected users label
     selected_users_label.set_text("Selected users: 0");
     selected_users_label.set_halign(Gtk::ALIGN_START);
+    selected_users_label.set_margin_bottom(10);
     
     // Setup confirm button
     confirm_button.set_sensitive(false);
+    confirm_button.get_style_context()->add_class("suggested-action");
+    confirm_button.set_size_request(-1, 40);
+    
+    // Setup go back button
+    go_back_button.set_size_request(-1, 40);
     
     // Connect signals
     search_entry.signal_search_changed().connect(
@@ -50,15 +66,25 @@ NewChatRoomView::NewChatRoomView(DatabaseHandler& db_handler)
     );
 
     // Pack widgets in order
+    main_box.pack_start(*title_label, false, false, 0);
     main_box.pack_start(search_entry, false, false, 0);
     main_box.pack_start(user_scroll, true, true, 0);
-    main_box.pack_start(selected_users_label, false, false, 5);
-    main_box.pack_start(room_name_label, false, false, 5);
-    main_box.pack_start(room_name_entry, false, false, 5);
-    button_box.pack_start(confirm_button, false, false, 0);
-    button_box.pack_end(go_back_button, false, false, 0);
+    main_box.pack_start(selected_users_label, false, false, 0);
+    main_box.pack_start(room_name_label, false, false, 0);
+    main_box.pack_start(room_name_entry, false, false, 0);
+    
+    button_box.pack_start(confirm_button, true, true, 0);
+    button_box.pack_end(go_back_button, true, true, 0);
+    button_box.set_margin_top(10);
+    button_box.set_margin_bottom(10);
 
     main_box.pack_start(button_box, false, false, 0);
+    
+    // Set margins for main container
+    set_margin_start(20);
+    set_margin_end(20);
+    set_margin_top(20);
+    set_margin_bottom(20);
     
     add(main_box);
     
