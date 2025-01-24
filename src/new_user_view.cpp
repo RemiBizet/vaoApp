@@ -112,9 +112,6 @@ void NewUserView::on_create_clicked() {
         txn.exec(insert_query);
         txn.commit();
 
-        // Emit the signal
-        m_signal_back_to_login_requested.emit();
-
         show_success("Account created successfully!");
         
         // Clear the fields
@@ -122,13 +119,9 @@ void NewUserView::on_create_clicked() {
         password_entry.set_text("");
         confirm_password_entry.set_text("");
 
-        // Close the view after a short delay
-        Glib::signal_timeout().connect_once(
-            [this]() {
-                hide();
-            },
-            2000
-        );
+
+        // Emit the signal
+        m_signal_back_to_login_requested.emit();
 
     } catch (const std::exception& e) {
         show_error("Error creating account: " + std::string(e.what()));
